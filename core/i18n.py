@@ -239,6 +239,10 @@ _TRANSLATIONS: dict[str, dict[str, str]] = {
         "ja": "再生速度 (ダブルクリックでリセット)",
         "en": "Playback speed (double-click to reset)",
     },
+    "tooltip_speed_input": {
+        "ja": "再生速度を手入力（0.10〜3.00）",
+        "en": "Enter playback speed (0.10-3.00)",
+    },
     "tooltip_reverse": {
         "ja": "逆再生プレビュー (B→A)",
         "en": "Reverse preview (B→A)",

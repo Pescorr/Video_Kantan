@@ -1,8 +1,8 @@
 """動画プレイヤーウィジェット (PySide6)"""
 
 from PySide6.QtCore import Qt, Signal
-from PySide6.QtGui import QPainter, QColor, QFont, QImage, QPixmap
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QSlider
+from PySide6.QtGui import QPainter, QColor, QFont, QImage, QPixmap, QDoubleValidator
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QSlider, QLineEdit
 
 from PIL import Image
 
@@ -201,6 +201,16 @@ class PlayerWidget(QWidget):
         self.lbl_speed.mouseDoubleClickEvent = lambda e: self._reset_speed()
         btn_layout.addWidget(self.lbl_speed)
 
+        # 速度手入力フィールド
+        self.speed_input = QLineEdit()
+        self.speed_input.setText("1.00")
+        self.speed_input.setFixedWidth(60)
+        self.speed_input.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.speed_input.setValidator(QDoubleValidator(0.10, 3.00, 3, self))
+        self.speed_input.returnPressed.connect(self._on_speed_input_changed)
+        self.speed_input.setToolTip(tr("tooltip_speed_input"))
+        btn_layout.addWidget(self.speed_input)
+
         self.slider_speed = QSlider(Qt.Orientation.Horizontal)
         self.slider_speed.setRange(10, 300)
         self.slider_speed.setValue(100)
@@ -326,10 +336,25 @@ class PlayerWidget(QWidget):
     def _on_speed_changed(self, value: int):
         speed = value / 100.0
         self.lbl_speed.setText(f"x{speed:.2f}")
+        self.speed_input.setText(f"{speed:.2f}")
         self.speed_changed.emit(speed)
+
+    def _on_speed_input_changed(self):
+        """手入力フィールドから速度を設定"""
+        text = self.speed_input.text()
+        try:
+            speed = float(text)
+            speed = max(0.10, min(speed, 3.00))  # 範囲クリップ
+            # スライダーとラベルを更新
+            self.slider_speed.setValue(int(speed * 100))
+            self.lbl_speed.setText(f"x{speed:.2f}")
+            self.speed_changed.emit(speed)
+        except ValueError:
+            pass  # 無効な入力は無視
 
     def _reset_speed(self):
         self.slider_speed.setValue(100)
+        self.speed_input.setText("1.00")
 
     def _on_reverse_clicked(self):
         if self.btn_reverse.isChecked():
